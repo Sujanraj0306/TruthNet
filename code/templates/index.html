@@ -1,0 +1,110 @@
+{% extends "base.html" %} {% block content %} {% if message %}
+<div id="flash-message-container">
+  <div class="flash-message">{{ message }}</div>
+</div>
+
+{% endif %}
+
+<div class="dark-homepage">
+  <div style="padding: 2rem">
+    <h1>Welcome to TruthNet</h1>
+    <div style="display: flex; justify-content: space-between; width: 100%">
+      <div class="notebook-toolbar">
+        <h2 class="index-subjects">Topics</h2>
+      </div>
+
+      <div>
+        <form
+          action="{{ url_for('create_collection_route') }}"
+          method="POST"
+          class="index-form-create-collection"
+        >
+          <input
+            type="text"
+            name="new_collection"
+            placeholder="Enter new topic name"
+            minlength="4"
+            maxlength="30"
+            required
+            class="index-form-create-collection-input"
+            pattern="^(?!.*\.\.)(?!\d{1,3}(\.\d{1,3}){3}$)[a-zA-Z0-9](?:[a-zA-Z0-9_\-\.\s]{1,61}[a-zA-Z0-9])?$"
+            title="4-30 characters, starts and ends with letters/numbers, only letters, numbers, underscores (_), hyphens (-), and dots (.), no consecutive dots, and not an IP address."
+          />
+          <button type="submit" class="index-form-create-collection-button">
+            Create New Topic
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div
+      style="
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      "
+    >
+      <div>
+        <ul class="index-list-display">
+          {% for collection in collections %}
+          <li
+            class="index-subject-cards"
+            style="
+              background-color: #c1a1a9;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              padding: 0.75rem 1rem;
+              color: #3c232b;
+            "
+          >
+            <a
+              href="{{ url_for('chat', collection_name=collection) }}"
+              style="text-decoration: none; color: inherit; flex-grow: 1"
+            >
+              <span>{{ collection }}</span>
+            </a>
+
+            <div style="display: flex; gap: 1rem">
+              <span
+                onclick="
+                event.stopPropagation(); event.preventDefault();
+                let newName = prompt('Enter new name for the subject:');
+                if(newName) {
+                  window.location = '{{ url_for('rename_collection_route') }}?old_name={{ collection }}&new_name=' + encodeURIComponent(newName);
+                }"
+                title="Rename"
+                style="cursor: pointer"
+                class="index-subject-card-outline-rename"
+              >
+                <img
+                  src="{{ url_for('static', filename='images/edit_black.png') }}"
+                  width="20"
+                  height="20"
+                />
+              </span>
+              <span
+                onclick="
+                event.stopPropagation(); event.preventDefault(); 
+                if(confirm('Are you sure you want to delete this notebook?')) {
+                  window.location='{{ url_for('delete_collection_route', collection_name=collection) }}';
+                }"
+                title="Delete"
+                style="cursor: pointer"
+                class="index-subject-card-outline-trash"
+              >
+                <img
+                  src="{{ url_for('static', filename='images/delete_black.png') }}"
+                  width="20"
+                  height="20"
+                />
+              </span>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    {% endblock %}
+  </div>
+</div>

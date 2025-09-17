@@ -1,0 +1,349 @@
+{% extends "base.html" %} {% block content %} {% if message %}
+<div id="flash-message-container">
+  <div class="flash-message">{{ message }}</div>
+</div>
+{% endif %}
+
+<div class="chat-main-container">
+  <div class="chat-sidebar" id="sidebar-panel">
+    <h3 style="text-align: center">Verified Sources</h3>
+    <br />
+    <div style="display: flex; justify-content: center">
+      <button type="button" onclick="openPopup()" class="url-chat-upload-form">
+        Upload URLs
+      </button>
+    </div>
+
+    <div id="popupModal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn" onclick="closePopup()">&times;</span>
+        <form
+          class="chat-upload-form"
+          action="/upload_url_authentic"
+          method="POST"
+          enctype="multipart/form-data"
+        >
+          <input
+            type="hidden"
+            name="collection_name"
+            value="{{ collection }}"
+          />
+          <label for="authenticUrls">Paste Verified Source URLs Below:</label>
+          <textarea
+            id="authenticUrls"
+            name="authentic_urls"
+            rows="10"
+            placeholder="Enter one URL per line upto 50 urls..."
+            required
+          ></textarea>
+          <button type="submit" class="url-popup-button">Submit</button>
+        </form>
+      </div>
+    </div>
+
+    <ul class="chat-file-list">
+      {% for file in files %}
+      <li>
+        <a
+          href="/delete_url_authentic/{{ collection }}/{{ file.strip()|urlencode }}"
+          style="text-decoration: none"
+        >
+          <img
+            src="{{ url_for('static', filename='images/bin.png') }}"
+            width="20"
+            height="20"
+          />
+        </a>
+        {{ file }}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="chat-collections">
+    <div class="toggle-bar-top">
+      <div class="toggle-bar-top-buttons">
+        <button
+          onclick="toggleSidebar()"
+          style="background: none; border: none; cursor: pointer"
+        >
+          <img
+            src="{{ url_for('static', filename='images/arrow-left.png') }}"
+            alt="Toggle Sidebar"
+            width="30"
+            height="30"
+          />
+        </button>
+      </div>
+      <div
+        style="
+          color: #3c232b;
+          font-size: 1.5rem;
+          padding-top: 0.25rem;
+          font-weight: 500;
+        "
+      >
+        {{collection}}
+      </div>
+      <div class="toggle-bar-top-buttons">
+        <button
+          onclick="toggleNotesPanel()"
+          style="background: none; border: none; cursor: pointer"
+        >
+          <img
+            src="{{ url_for('static', filename='images/arrow-right.png') }}"
+            alt="Toggle Sidebar"
+            width="30"
+            height="30"
+          />
+        </button>
+      </div>
+    </div>
+    <div class="chat-window" style="padding-right: 0rem">
+      <div class="chat-log" id="chat-log">
+        {% for entry in chat_data %} {% if loop.index0 % 2 == 0 %}
+        <div style="margin-bottom: 0.5rem">
+          <div class="chat-robot-message">
+            <div>{{ entry }}</div>
+          </div>
+        </div>
+
+        {% else %}
+        <!-- Human -->
+        <div
+          style="
+            display: flex;
+            justify-content: flex-end;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+          "
+        >
+          <div class="chat-human-message">
+            <div>{{ entry }}</div>
+          </div>
+          <!-- <div style="font-size: 1.5rem; margin-left: 0.5rem">🧑</div> -->
+        </div>
+        {% endif %} {% endfor %}
+      </div>
+
+      <!-- Chat input -->
+      <div id="chat-input-container">
+        <form
+          class="chat-input"
+          method="POST"
+          action="/start_chatbot_truthnet"
+          onsubmit="showGeneratingMessage(event)"
+        >
+          <input
+            type="text"
+            name="user_input_prompt"
+            id="user_input_prompt"
+            placeholder="Type to check discrepancy..."
+            required
+            autocomplete="off"
+          />
+          <input
+            type="hidden"
+            name="collection_name"
+            value="{{ collection }}"
+          />
+          <button type="submit" style="border: none; cursor: pointer">
+            Check
+          </button>
+        </form>
+      </div>
+
+      <!-- Generating message -->
+      <div>
+        <p
+          id="generating-message"
+          style="
+            display: none;
+            color: #888;
+            text-align: center;
+            font-size: 1rem;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+          "
+        >
+          ⏳ TruthNet is fact checking...
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="chat-sidebar"
+    id="sidebar-panel-left"
+    style="border-bottom-right-radius: 0rem; border-bottom-left-radius: 1rem"
+  >
+    <h3 style="text-align: center">Unverified Sources</h3>
+    <br />
+    <div style="display: flex; justify-content: center">
+      <button
+        type="button"
+        onclick="openPopup_left()"
+        class="url-chat-upload-form"
+      >
+        Upload URLs
+      </button>
+    </div>
+
+    <div id="popupModal-left" class="modal">
+      <div class="modal-content">
+        <span class="close-btn" onclick="closePopup_left()">&times;</span>
+        <form
+          class="chat-upload-form"
+          action="/upload_url_user"
+          method="POST"
+          enctype="multipart/form-data"
+        >
+          <input
+            type="hidden"
+            name="collection_name"
+            value="{{ collection }}"
+          />
+          <label for="authenticUrls"
+            >Paste Unverified Sources URLs Below:</label
+          >
+          <textarea
+            id="authenticUrls"
+            name="authentic_urls"
+            rows="10"
+            placeholder="Enter one URL per line upto 50 urls..."
+            required
+          ></textarea>
+          <button type="submit" class="url-popup-button">Submit</button>
+        </form>
+      </div>
+    </div>
+
+    <ul class="chat-file-list">
+      {% for url in urls_user %}
+      <li>
+        <a
+          href="/delete_url_user/{{ collection }}/{{ url.strip()|urlencode }}"
+          style="text-decoration: none"
+        >
+          <img
+            src="{{ url_for('static', filename='images/bin.png') }}"
+            width="20"
+            height="20"
+          />
+        </a>
+        {{ url }}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script>
+  // Flash message timeout
+  setTimeout(function () {
+    const flash = document.getElementById("flash-message-container");
+    if (flash) {
+      flash.style.transition = "opacity 0.5s ease-out";
+      flash.style.opacity = 0;
+      setTimeout(() => flash.remove(), 500);
+    }
+  }, 10000);
+
+  // Scroll to latest chat
+  window.onload = function () {
+    const chatLog = document.querySelector(".chat-log");
+    if (chatLog) {
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+  };
+
+  // Hide input during generation
+  function showGeneratingMessage(event) {
+    document.getElementById("generating-message").style.display = "block";
+    document.getElementById("chat-input-container").style.display = "none";
+    const inputBox = document.getElementById("user_input_prompt");
+    const userInput = inputBox.value.trim();
+    console.log(userInput);
+
+    const chatLog = document.querySelector(".chat-log");
+    const userMessageDiv = document.createElement("div");
+    userMessageDiv.style = `
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-start;
+      margin-bottom: 0.5rem;
+    `;
+    userMessageDiv.innerHTML = `
+      <div class="chat-human-message">
+        <div>${userInput}</div>
+      </div>
+    `;
+    chatLog.appendChild(userMessageDiv);
+    chatLog.scrollTop = chatLog.scrollHeight;
+  }
+  function adjustChatWidth() {
+    const sidebar = document.getElementById("sidebar-panel");
+    const notes = document.getElementById("sidebar-panel-left");
+    const chatWindow = document.querySelector(".chat-collections");
+
+    const sidebarVisible = sidebar && sidebar.style.display !== "none";
+    const notesVisible = notes && notes.style.display !== "none";
+
+    if (sidebarVisible && notesVisible) {
+      chatWindow.style.marginLeft = "0%";
+      chatWindow.style.marginRight = "0%";
+    } else if (!sidebarVisible && notesVisible) {
+      chatWindow.style.marginLeft = "10%";
+      chatWindow.style.marginRight = "0%";
+    } else if (sidebarVisible && !notesVisible) {
+      chatWindow.style.marginLeft = "0%";
+      chatWindow.style.marginRight = "10%";
+    } else {
+      chatWindow.style.marginLeft = "10%";
+      chatWindow.style.marginRight = "10%";
+      chatWindow.style.width = "80%";
+    }
+  }
+
+  function toggleSidebar() {
+    const sidebar = document.getElementById("sidebar-panel");
+    sidebar.style.display = sidebar.style.display === "none" ? "block" : "none";
+    adjustChatWidth();
+  }
+
+  function toggleNotesPanel() {
+    const notes = document.getElementById("sidebar-panel-left");
+    notes.style.display = notes.style.display === "none" ? "block" : "none";
+    adjustChatWidth();
+  }
+
+  function openPopup() {
+    document.getElementById("popupModal").style.display = "block";
+  }
+
+  function closePopup() {
+    document.getElementById("popupModal").style.display = "none";
+  }
+
+  function openPopup_left() {
+    document.getElementById("popupModal-left").style.display = "block";
+  }
+
+  function closePopup_left() {
+    document.getElementById("popupModal-left").style.display = "none";
+  }
+
+  window.onclick = function (event) {
+    if (event.target == document.getElementById("popupModal")) {
+      closePopup();
+    }
+  };
+
+  window.onclick = function (event) {
+    if (event.target == document.getElementById("popupModal-left")) {
+      closePopup_left();
+    }
+  };
+</script>
+{% endblock %}

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>TruthNet</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="header">
+      {% if home %}
+      <a href="/" style="color: #3C232B">
+        <img
+          src="{{ url_for('static', filename='images/home_black.png') }}"
+          alt="Home"
+          width="30"
+          height="30"
+        />
+      </a>
+      {% endif %}
+      <div class="header-title">TruthNet</div>
+        <div class="internet-status">
+          {% if internet_status == 'Internet On' %}
+          <img
+            src="{{ url_for('static', filename='images/wifi.png') }}"
+            alt="Online"
+            width="30"
+            height="30"
+          />
+          {% else %}
+          <img
+            src="{{ url_for('static', filename='images/no-wifi.png') }}"
+            alt="Offline"
+            width="30"
+            height="30"
+          />
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="container">{% block content %}{% endblock %}</div>
+  </body>
+</html>
